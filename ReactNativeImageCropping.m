@@ -27,7 +27,7 @@ RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
     self._resolve = resolve;
     
     [self.bridge.imageLoader loadImageWithTag:imageUrl callback:^(NSError *error, UIImage *image) {
-        if(error) reject(error);
+        if(error) reject(@"100", @"Failed to load image", error);
         if(image) {
             [self handleImageLoad:image];
         }
@@ -82,6 +82,6 @@ RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
     dispatch_async(dispatch_get_main_queue(), ^{
         [cropViewController dismissViewControllerAnimated:YES completion:nil];
     });
-    self._reject([NSError errorWithDomain:@"Cancelled" code:400 userInfo:NULL]);
+    self._reject(@"400", @"Cancelled", [NSError errorWithDomain:@"Cancelled" code:400 userInfo:NULL]);
 }
 @end
