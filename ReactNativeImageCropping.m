@@ -6,8 +6,22 @@
 
 @property (nonatomic, strong) RCTPromiseRejectBlock _reject;
 @property (nonatomic, strong) RCTPromiseResolveBlock _resolve;
+@property TOCropViewControllerAspectRatio aspectRatio;
 
 
+@end
+
+@implementation RCTConvert (AspectRatio)
+RCT_ENUM_CONVERTER(TOCropViewControllerAspectRatio, (@{
+            @"AspectRatioOriginal" : @(TOCropViewControllerAspectRatioOriginal),
+              @"AspectRatioSquare" : @(TOCropViewControllerAspectRatioSquare),
+                 @"AspectRatio3x2" : @(TOCropViewControllerAspectRatio3x2),
+                 @"AspectRatio5x3" : @(TOCropViewControllerAspectRatio5x3),
+                 @"AspectRatio4x3" : @(TOCropViewControllerAspectRatio4x3),
+                 @"AspectRatio5x4" : @(TOCropViewControllerAspectRatio5x4),
+                 @"AspectRatio7x5" : @(TOCropViewControllerAspectRatio7x5),
+                @"AspectRatio16x9" : @(TOCropViewControllerAspectRatio16x9)
+                }), UIStatusBarAnimationNone, integerValue)
 @end
 
 @implementation ReactNativeImageCropping
@@ -17,6 +31,20 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
+- (NSDictionary *)constantsToExport
+{
+    return @{
+   @"AspectRatioOriginal" : @(TOCropViewControllerAspectRatioOriginal),
+     @"AspectRatioSquare" : @(TOCropViewControllerAspectRatioSquare),
+        @"AspectRatio3x2" : @(TOCropViewControllerAspectRatio3x2),
+        @"AspectRatio5x3" : @(TOCropViewControllerAspectRatio5x3),
+        @"AspectRatio4x3" : @(TOCropViewControllerAspectRatio4x3),
+        @"AspectRatio5x4" : @(TOCropViewControllerAspectRatio5x4),
+        @"AspectRatio7x5" : @(TOCropViewControllerAspectRatio7x5),
+       @"AspectRatio16x9" : @(TOCropViewControllerAspectRatio16x9),
+    };
+}
+
 RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
                     resolver:(RCTPromiseResolveBlock)resolve
                     rejecter:(RCTPromiseRejectBlock)reject
@@ -25,6 +53,7 @@ RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
 {
     self._reject = reject;
     self._resolve = resolve;
+    self.aspectRatio = NULL;
     
     [self.bridge.imageLoader loadImageWithTag:imageUrl callback:^(NSError *error, UIImage *image) {
         if(error) reject(@"100", @"Failed to load image", error);
@@ -34,13 +63,35 @@ RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
     }];
 }
 
+RCT_EXPORT_METHOD(cropImageWithUrlAndAspect:(NSString *)imageUrl
+                                aspectRatio:(TOCropViewControllerAspectRatio)aspectRatio
+                                   resolver:(RCTPromiseResolveBlock)resolve
+                                   rejecter:(RCTPromiseRejectBlock)reject
+        )
+{
+    self._reject = reject;
+    self._resolve = resolve;
+    self.aspectRatio = aspectRatio;
+
+    [self.bridge.imageLoader loadImageWithTag:imageUrl callback:^(NSError *error, UIImage *image) {
+        if(error) reject(@"100", @"Failed to load image", error);
+        if(image) {
+            [self handleImageLoad:image];
+        }
+    }];
+
+}
+
 - (void)handleImageLoad:(UIImage *)image {
     
     UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     TOCropViewController *cropViewController = [[TOCropViewController alloc] initWithImage:image];
     cropViewController.delegate = self;
     
-    cropViewController.lockedAspectRatio = YES;
+    if(self.aspectRatio) {
+        cropViewController.lockedAspectRatio = YES;
+        cropViewController.defaultAspectRatio = self.aspectRatio;
+    }
     dispatch_async(dispatch_get_main_queue(), ^{
         [root presentViewController:cropViewController animated:YES completion:nil];
     });
