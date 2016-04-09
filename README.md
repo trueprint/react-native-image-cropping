@@ -28,9 +28,11 @@ const React = require('react-native');
 const {ReactNativeImageCropping} = React.NativeModules;
 ```
 
-### Crop the image by URL
+### Crop the image
 
-It is using RCTImageLoader so it should be able to crop any image that react knows how to load(display).
+It is using RCTImageLoader so it should be able to crop any image that react knows how to load / display.
+
+#### Without aspect ratio restriction:
 
 ```javascript
 const originalImage = require('CrazyFlowers.jpg');
@@ -44,5 +46,32 @@ ReactNativeImageCropping
 	err => console.log(b));
 ```
 
+#### Lock to specific aspect ratio:
+
+Available aspect ratios:
+```javascript
+ - AspectRatioOriginal
+ - AspectRatioSquare
+ - AspectRatio3x2
+ - AspectRatio5x4
+ - AspectRatio4x3
+ - AspectRatio5x4
+ - AspectRatio7x5
+ - AspectRatio16x9
+```
+
+Example:
+
+```javascript
+let aspectRatio = ReactNativeImageCropping.AspectRatioSquare;
+
+ReactNativeImageCropping
+    .cropImageWithUrlAndAspect(imageUrl, aspectRatio)
+    .then(image => {
+        //Image is saved in NSTemporaryDirectory!
+        //image = {uri, width, height}  
+    },
+    err => console.log(b));
+```
 
 
