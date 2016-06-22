@@ -2,7 +2,7 @@ Simple react-native image cropping library wrapper around [siong1987/TOCropViewC
 
 ![TOCropViewController](https://raw.githubusercontent.com/siong1987/TOCropViewController/master/screenshot.jpg)
 
-## Instalation
+## Installation
 
 Supported only on iOS.
 
