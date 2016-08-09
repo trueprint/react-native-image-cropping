@@ -54,7 +54,7 @@ RCT_EXPORT_METHOD(  cropImageWithUrl:(NSString *)imageUrl
     self._reject = reject;
     self._resolve = resolve;
     self.aspectRatio = NULL;
-    
+
     [self.bridge.imageLoader loadImageWithTag:imageUrl callback:^(NSError *error, UIImage *image) {
         if(error) reject(@"100", @"Failed to load image", error);
         if(image) {
@@ -83,11 +83,11 @@ RCT_EXPORT_METHOD(cropImageWithUrlAndAspect:(NSString *)imageUrl
 }
 
 - (void)handleImageLoad:(UIImage *)image {
-    
+
     UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     TOCropViewController *cropViewController = [[TOCropViewController alloc] initWithImage:image];
     cropViewController.delegate = self;
-    
+
     if(self.aspectRatio) {
         cropViewController.lockedAspectRatio = YES;
         cropViewController.defaultAspectRatio = self.aspectRatio;
@@ -99,7 +99,7 @@ RCT_EXPORT_METHOD(cropImageWithUrlAndAspect:(NSString *)imageUrl
 
 /**
  Called when the user has committed the crop action, and provides both the original image with crop co-ordinates.
- 
+
  @param image The newly cropped image.
  @param cropRect A rectangle indicating the crop region of the image the user chose (In the original image's local co-ordinate space)
  */
@@ -108,25 +108,26 @@ RCT_EXPORT_METHOD(cropImageWithUrlAndAspect:(NSString *)imageUrl
     dispatch_async(dispatch_get_main_queue(), ^{
         [cropViewController dismissViewControllerAnimated:YES completion:nil];
     });
-    
-    NSData *pngData = UIImagePNGRepresentation(image);
-    NSString *fileName = [NSString stringWithFormat:@"memegenerator-crop-%lf.png", [NSDate timeIntervalSinceReferenceDate]];
-    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName]; //Add the file name)
-    [pngData writeToFile:filePath atomically:YES];
+
+    NSData *jpgData = UIImageJPEGRepresentation(image, 0.5);
+    NSString *fileName = [NSString stringWithFormat:@"memegenerator-crop-%lf.jpg", [NSDate timeIntervalSinceReferenceDate]];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
+    [jpgData writeToFile:filePath atomically:YES];
+
     NSNumber *width  = [NSNumber numberWithFloat:image.size.width];
     NSNumber *height = [NSNumber numberWithFloat:image.size.height];
-    
+
     NSDictionary * imageData = @{
                              @"uri":filePath,
                              @"width":width,
                              @"height":height
-                             };
+                            };
     self._resolve(imageData);
 }
 /**
  If implemented, when the user hits cancel, or completes a UIActivityViewController operation, this delegate will be called,
  giving you a chance to manually dismiss the view controller
- 
+
  */
 - (void)cropViewController:(TOCropViewController *)cropViewController didFinishCancelled:(BOOL)cancelled
 {
